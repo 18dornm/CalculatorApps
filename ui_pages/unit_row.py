@@ -9,15 +9,22 @@ class UnitRow:
         self.units = units
         self.is_updating = False
 
-        # LEFT SIDE
+        
         with ui.row().classes('items-center gap-2'):
             ui.button(icon='content_copy', on_click=self.copy_left).props('flat dense round size=sm').classes('bg-white text-black')
             self.input_left = ui.input(value='1', on_change=self.left_changed).classes('w-24')
-            self.unit_left = ui.select(options=units, value=units[0], on_change=self.right_changed)
+            self.unit_left = ui.select(options=units,
+                                       value=units[0], 
+                                       with_input=True,
+                                       new_value_mode='add-unique',
+                                       on_change=self.right_changed)
             ui.label('=').classes('text-2xl mx-2')
             ui.button(icon='content_copy', on_click=self.copy_right).props('flat dense round size=sm').classes('bg-white text-black')
             self.input_right = ui.input(on_change=self.right_changed).classes('w-24')
-            self.unit_right = ui.select(options=units, value=units[1] if len(units) > 1 else units[0],
+            self.unit_right = ui.select(options=units,
+                                        value=units[1] if len(units) > 1 else units[0],
+                                        with_input=True,
+                                        new_value_mode='add-unique',
                                         on_change=self.left_changed)
 
         # Initialize the right value with the conversion of 1
