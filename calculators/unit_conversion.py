@@ -22,6 +22,8 @@ moment_of_inertia_units = ['kg * m**2', 'lb * in**2', 'kg * cm**2', 'kg * mm**2'
 second_moment_of_area_units = ['mm**4','in**4', 'cm**4', 'm**4', 'ft**4', 'yd**4']
 speed_units = ['m/s', 'mph', 'kph', 'km/min', 'km/s', 'm/hr', 'm/min', 'ft/s', 'ft/min', 'ft/hr', 'in/s', 'in/min', 'in/hr', 'cm/s', 'cm/min', 'cm/hr', 'mm/s', 'mm/min', 'mm/hr', 'yd/s', 'yd/min', 'yd/hr', 'mi/min', 'mi/s', 'light_speed', 'knot']
 acceleration_units = ['m/s**2', 'gravity', 'ft/s**2', 'in/s**2', 'mm/s**2', 'cm/s**2']
+volume_units = ['liter', 'cubic feet', 'cubic meters', 'cubic inches', 'cubic mm', 'cubic cm']
+temperature_units = ['degC', 'degF', 'degK', 'degR']
 # testing:
 #print(convert(12.3, "m/s**2", "gravity"))
 #print(speed_units)

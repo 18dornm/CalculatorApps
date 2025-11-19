@@ -62,9 +62,20 @@ def saturation_pressure(temperature):
         saturation_pressure = saturation_pressure_mmhg * u('mmHg')
         return saturation_pressure
 
+Q_ = u.Quantity
+conditions_standard_cubic_feet = VolumeCondition(Q_(60, u.degF), 0*u('kPa'), 14.696*u('psi'), 0.0)
+conditions_ISO2533_liters = VolumeCondition(Q_(15, u.degC), 0*u('kPa'), 1.01325*u('bar'), 0.0)
+conditions_anr_liters = VolumeCondition(Q_(20, u.degC), 0*u('kPa'), 1.01325*u('bar'), 0.65)
+conditions_ISO1217_liters = VolumeCondition(Q_(20, u.degC), 0.0*u('kPa'), 1.0*u('bar'), 0.0)
+conditions_DIN1343_liters = VolumeCondition(Q_(0, u.degC), 0*u('kPa'), 101.325*u('kPa'), 0.0)
 
-conditions_standard_cubic_feet = VolumeCondition(68*u('degF'), 0*u('kPa'), 101.325*u('kPa'), 0.0)
-conditions_standard_liters = VolumeCondition(20*u('degC'), 0*u('kPa'), 101.325*u('kPa'), 0.0)
-conditions_anr_liters = VolumeCondition(20*u('degC'), 0*u('kPa'), 1.01325*u('bar'), 0.65)
-conditions_ISO1217_liters = VolumeCondition(20*u('degC'), 0.0*u('kPa'), 100.0*u('kPa'), 0.0)
-conditions_DIN1343_normal_liters = VolumeCondition(0*u('degC'), 0*u('kPa'), 101.325*u('kPa'), 0.0)
+'''
+# testing
+test_input_conditions = VolumeCondition(Q_(72, u.degF), 80*u('psi'), 14.696*u('psi'), 0.35)
+test_output_conditions = conditions_anr_liters
+vol = 1 * u('ft**3')
+vol_out = convert_volume(test_input_conditions, vol, test_output_conditions, True)
+print(vol_out.to('liter'))
+vol_out = convert_volume(test_input_conditions, vol, test_output_conditions, False)
+print(vol_out.to('liter'))
+'''
