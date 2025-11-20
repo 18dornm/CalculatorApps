@@ -1,6 +1,6 @@
 from nicegui import ui
 from ui_pages.unit_converter_page import unit_converter_page
-from ui_pages.volume_converter_page import volume_converter_page
+from ui_pages.volume_converter_page import VolumeConverterPage
 
 with ui.tabs() as tabs:
     tab_converter = ui.tab('Unit Converter')
@@ -11,6 +11,6 @@ with ui.tab_panels(tabs, value=tab_converter).classes('w-full'):
         unit_converter_page()
     
     with ui.tab_panel(tab_volume_converter):
-        volume_converter_page()
+        VolumeConverterPage()
 
 ui.run()

@@ -51,6 +51,7 @@ def saturation_pressure(temperature):
         """
         temp_C = temperature.to('degC')
         temp_C = temp_C.magnitude
+        
 
         # Constants for water, valid from -20-100°C
         A = 8.07131
@@ -63,7 +64,7 @@ def saturation_pressure(temperature):
         return saturation_pressure
 
 Q_ = u.Quantity
-conditions_standard_cubic_feet = VolumeCondition(Q_(60, u.degF), 0*u('kPa'), 14.696*u('psi'), 0.0)
+conditions_standard_cubic_feet = VolumeCondition(Q_(60, u.degF), 0*u('psi'), 14.696*u('psi'), 0.0)
 conditions_ISO2533_liters = VolumeCondition(Q_(15, u.degC), 0*u('kPa'), 1.01325*u('bar'), 0.0)
 conditions_anr_liters = VolumeCondition(Q_(20, u.degC), 0*u('kPa'), 1.01325*u('bar'), 0.65)
 conditions_ISO1217_liters = VolumeCondition(Q_(20, u.degC), 0.0*u('kPa'), 1.0*u('bar'), 0.0)

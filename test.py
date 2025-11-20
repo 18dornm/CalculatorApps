@@ -8,13 +8,15 @@ torque_units = [str(unit) for unit in torque_compatible]
 print(torque_units)
 
 #torque1 = 12 * u.('N*m')
-
-volume = 1 * ureg('cubic feet')
-vol1 = volume.to('liters')
-vol2 = volume.to('cubic meters')
-print(vol2)
-print(vol1)
+Q_ = ureg.Quantity
+volume = Q_(1, '°C')
+#vol1 = volume.to('liters')
+#vol2 = volume.to('cubic meters')
+#print(vol2)
+#print(vol1)
 print(volume)
+vol_str = f"{volume.units:~P}"
+print(vol_str)
 '''
 # Get all unit names/aliases, excluding private/magic methods and other attributes
 units = [name for name in dir(ureg) if not name.startswith('_')]
