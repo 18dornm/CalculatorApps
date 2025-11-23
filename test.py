@@ -9,7 +9,7 @@ print(torque_units)
 
 #torque1 = 12 * u.('N*m')
 Q_ = ureg.Quantity
-volume = Q_(1, '°C')
+volume = Q_(1, 'in**4')
 #vol1 = volume.to('liters')
 #vol2 = volume.to('cubic meters')
 #print(vol2)

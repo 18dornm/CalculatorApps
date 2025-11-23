@@ -1,11 +1,12 @@
 from pint import UnitRegistry
 
 u = UnitRegistry()
+qu = u.Quantity
 
 def convert(value: float, from_unit:str, to_unit:str):
     '''Convert value between units using Pint.'''
     try:
-        quantity = value * u(from_unit)
+        quantity = qu(value, from_unit)
         return quantity.to(to_unit).magnitude
     except Exception:
         return None
@@ -17,15 +18,15 @@ force_units = ['N', 'lbf', 'kN', 'gf', 'kgf', 'metric_ton_force', 'dyne', 'kip']
 length_units = ['mm', 'in', 'm', 'ft', 'km', 'mi', 'cm', 'dm', 'nm', 'yd', 'light_year', 'planck_length', 'angstrom', 'um', 'micron', 'μm', 'league', 'nautical_mile']
 torque_units = ['N * m', 'lbf * in', 'lbf * foot', 'N * cm', 'N * mm', 'kN * m', 'kgf * m', 'kgf * cm', 'kgf * mm', 'gf * m', 'gf * cm', 'gf * mm', 'ozf * foot', 'ozf * in']
 mass_units = ['kg', 'lb', 'g', 'klb', 'slug', 'US_ton', 'metric_ton', 'oz']
-pressure_units = ['MPa', 'psi', 'Pa', 'kPa', 'GPa',  'bar', 'mbar', 'μbar', 'ksi', 'atm', 'torr', 'mmHg', 'inHg', 'cmH2O', 'mmH2O', 'inH2O', 'ftH2O', 'N/mm**2', 'kN/mm**2', 'N/cm**2']
-moment_of_inertia_units = ['kg * m**2', 'lb * in**2', 'kg * cm**2', 'kg * mm**2', 'g * cm**2', 'g * mm^2', 'lb * ft**2', 'slug * ft**2', 'kgf * cm * s**2', 'oz * in**2', 'kgf * m * s**2', 'lbf * in * s**2', 'lbf * ft * s**2']
-second_moment_of_area_units = ['mm**4','in**4', 'cm**4', 'm**4', 'ft**4', 'yd**4']
+pressure_units = ['MPa', 'psi', 'Pa', 'kPa', 'GPa',  'bar', 'mbar', 'μbar', 'ksi', 'atm', 'torr', 'mmHg', 'inHg', 'cmH2O', 'mmH2O', 'inH2O', 'ftH2O', 'N/mm²', 'kN/mm²', 'N/cm²']
+moment_of_inertia_units = ['kg * m²', 'lb * in²', 'kg * cm²', 'kg * mm²', 'g * cm²', 'g * mm^2', 'lb * ft²', 'slug * ft²', 'kgf * cm * s²', 'oz * in²', 'kgf * m * s²', 'lbf * in * s²', 'lbf * ft * s²']
+second_moment_of_area_units = ['mm⁴','in⁴', 'cm⁴', 'm⁴', 'ft⁴', 'yd⁴']
 speed_units = ['m/s', 'mph', 'kph', 'km/min', 'km/s', 'm/hr', 'm/min', 'ft/s', 'ft/min', 'ft/hr', 'in/s', 'in/min', 'in/hr', 'cm/s', 'cm/min', 'cm/hr', 'mm/s', 'mm/min', 'mm/hr', 'yd/s', 'yd/min', 'yd/hr', 'mi/min', 'mi/s', 'light_speed', 'knot']
-acceleration_units = ['m/s**2', 'gravity', 'ft/s**2', 'in/s**2', 'mm/s**2', 'cm/s**2']
-volume_units = ['liter', 'cubic feet', 'cubic meters', 'cubic inches', 'cubic mm', 'cubic cm']
+acceleration_units = ['m/s²', 'gravity', 'ft/s²', 'in/s²', 'mm/s²', 'cm/s²']
+volume_units = ['L', 'ft³', 'm³', 'in³', 'mm³', 'cm³']
 temperature_units = ['°C', '°F', '°K', '°R']
 # testing:
-#print(convert(12.3, "m/s**2", "gravity"))
+#print(convert(12.3, "m/s²", "gravity"))
 #print(speed_units)
 
 

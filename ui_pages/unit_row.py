@@ -52,7 +52,7 @@ class CustomConversion:
             left_val = float(self.input_left.value or 0)
             self.is_updating = True
             result = convert(left_val, self.unit_left.value, self.unit_right.value)
-            self.input_right.value = f'{result:g}'
+            self.input_right.value = result
         except Exception:
             self.input_right.value = None
         finally:
@@ -64,7 +64,7 @@ class CustomConversion:
             right_val = float(self.input_right.value or 0)
             self.is_updating = True
             result = convert(right_val, self.unit_right.value, self.unit_left.value)
-            self.input_left.value = f'{result:g}'
+            self.input_left.value = result
         except Exception:
             self.input_left.value = None
         finally:
@@ -81,11 +81,10 @@ class UnitRow:
         
         with ui.row().classes('items-center gap-2'):
             ui.button(icon='content_copy', on_click=self.copy_left).props('flat dense round size=sm').classes('bg-white text-black')
-            self.input_left = ui.number(value='1', on_change=self.left_changed).classes('w-24')
+            self.input_left = ui.number(value='1', format='%.5f', on_change=self.left_changed).classes('w-24')
             if is_custom:
-                self.unit_left = ui.select(options=units,
-                                           label="Start typing a unit..", 
-                                           with_input=True,
+                self.unit_left = ui.input(autocomplete=units,
+                                           label="Start typing a unit..",
                                            on_change=self.right_changed)
             else:
                 self.unit_left = ui.select(options=units,
@@ -94,11 +93,10 @@ class UnitRow:
                                            on_change=self.right_changed)
             ui.label('=').classes('text-2xl mx-2')
             ui.button(icon='content_copy', on_click=self.copy_right).props('flat dense round size=sm').classes('bg-white text-black')
-            self.input_right = ui.number(on_change=self.right_changed).classes('w-24')
+            self.input_right = ui.number(format='%.5f', on_change=self.right_changed).classes('w-24')
             if is_custom:
-                self.unit_right = ui.select(options=units,
+                self.unit_right = ui.input(autocomplete=units,
                                             label="Start typing a unit..",
-                                            with_input=True,
                                             on_change=self.left_changed)
             else:
                 self.unit_right = ui.select(options=units,
@@ -133,30 +131,20 @@ class UnitRow:
         try:
             left_val = float(self.input_left.value or 0)
             self.is_updating = True
-            result = convert(left_val, self.unit_left.value, self.unit_right.value)
-            self.input_right.value = f'{result:g}'
+            self.input_right.value = convert(left_val, self.unit_left.value, self.unit_right.value)
         except Exception:
             self.input_right.value = None
-            ui.notify("right from left update didnt work")
         finally:
             self.is_updating = False
 
     # INTERNAL UPDATE RIGHT → LEFT
     def update_left_from_right(self):
-        #FIXME
-        right_val = float(self.input_right.value or 0)
-        self.is_updating = True
-        result = convert(right_val, self.unit_right.value, self.unit_left.value)
-        self.input_left.value = f'{result:g}'
-        '''
         try:
             right_val = float(self.input_right.value or 0)
             self.is_updating = True
-            result = convert(right_val, self.unit_right.value, self.unit_left.value)
-            self.input_left.value = f'{result:g}'
+            self.input_left.value = convert(right_val, self.unit_right.value, self.unit_left.value)
         except Exception:
             self.input_left.value = None
-            ui.notify("left from right update didnt work")
         finally:
             self.is_updating = False
-        '''
+        

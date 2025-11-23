@@ -13,4 +13,4 @@ with ui.tab_panels(tabs, value=tab_converter).classes('w-full'):
     with ui.tab_panel(tab_volume_converter):
         VolumeConverterPage()
 
-ui.run()
+ui.run(host='0.0.0.0', port=7860)
