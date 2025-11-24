@@ -8,41 +8,34 @@ def unit_converter_page():
     UnitRow(all_units, True)
     ui.separator()
 
-    ui.label('Force Conversion').classes('text-lg mt-6')
+    ui.label('Other Conversions').classes('text-lg mt-6')
+
+    ui.label('Force Conversion')
     UnitRow(force_units, False)
-    ui.separator()
     
-    ui.label('Torque Conversion').classes('text-lg mt-6')
+    ui.label('Torque Conversion')
     UnitRow(torque_units, False)
-    ui.separator()
     
-    ui.label('Pressure Conversion').classes('text-lg mt-6')
+    ui.label('Pressure Conversion')
     UnitRow(pressure_units, False)
-    ui.separator()
     
-    ui.label('Length Conversion').classes('text-lg mt-6')
+    ui.label('Length Conversion')
     UnitRow(length_units, False)
-    ui.separator()
     
-    ui.label('Mass Conversion').classes('text-lg mt-6')
+    ui.label('Mass Conversion')
     UnitRow(mass_units, False)
-    ui.separator()
     
-    ui.label('Speed Conversion').classes('text-lg mt-6')
+    ui.label('Speed Conversion')
     UnitRow(speed_units, False)
-    ui.separator()
     
-    ui.label('Acceleration Conversion').classes('text-lg mt-6')
+    ui.label('Acceleration Conversion')
     UnitRow(acceleration_units, False)
-    ui.separator()
     
-    ui.label('Second Moment of Area Conversion').classes('text-lg mt-6')
+    ui.label('Second Moment of Area Conversion')
     UnitRow(second_moment_of_area_units, False)
-    ui.separator()
     
-    ui.label('Mass Moment of Inertia Conversion').classes('text-lg mt-6')
+    ui.label('Mass Moment of Inertia Conversion')
     UnitRow(moment_of_inertia_units, False)
-    ui.separator()
     
 
 

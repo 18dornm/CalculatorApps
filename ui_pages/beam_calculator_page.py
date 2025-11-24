@@ -52,7 +52,7 @@ class BeamCalculatorPage:
             self.fixture_rows_container = ui.column().classes('gap-2')
             
             # Add row button
-            ui.button('Add Row', on_click=self.add_fixture_row)
+            ui.button('Add Row', icon='add', on_click=self.add_fixture_row).props('flat color=grey-8')
         ui.separator()
 
         ui.label('Beam Loads and Moments').classes('text-lg mt-6')
@@ -74,9 +74,14 @@ class BeamCalculatorPage:
             self.loads_rows_container = ui.column().classes('gap-2')
             
             # Add row buttons
-            ui.button('Add Row', on_click=self.add_load_row)
-            ui.button('Add Gravity Force', on_click=self.add_gravity_force)
+            with ui.row():
+                ui.button('Add Row', icon='add', on_click=self.add_load_row).props('flat color=grey-8')
+                ui.button('Add Gravity Force', icon='add', on_click=self.add_gravity_force).props('flat color=grey-8')
             ui.separator()
+            ui.label('')
+            ui.button("Solve Beam", on_click=self.solve_beam)
+            ui.separator()
+            ui.label('Beam Results').classes('text-lg mt-6')
         
     def add_fixture_row(self):
         BeamFixtureRow(self.fixture_rows_container)
@@ -91,7 +96,6 @@ class BeamCalculatorPage:
                      type_val="Distributed Load", start_pos=0, end_pos=beam_length, pos_unit='m',
                      start_val=gravity_load, end_val=gravity_load, load_unit="N/m")
         
-    
     def material_change(self):
         #TODO: update material modulus, density, yield strength based on selection.
         return 0
@@ -99,6 +103,10 @@ class BeamCalculatorPage:
     def material_prop_change(self):
         #TODO: change value of material_quickselect to 'Custom'
         self.material_quickselect.value = 'Custom'
+        return 0
+    
+    def solve_beam(self):
+        #TODO: checks for if inputs are correct, then converts units to be consistent, then solves beam, then updates plots
         return 0
 
 class BeamFixtureRow:
