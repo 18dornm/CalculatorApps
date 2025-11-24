@@ -14,7 +14,7 @@ class VolumeConverterPage:
                                         value=volume_units[0],
                                         with_input=True,
                                         new_value_mode='add-unique',
-                                        on_change=self.update_output)
+                                        on_change=self.update_output).classes('w-24')
             ui.label("=")
             ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
             self.volume_output = ui.label()
@@ -22,7 +22,7 @@ class VolumeConverterPage:
                                         value=volume_units[1],
                                         with_input=True,
                                         new_value_mode='add-unique',
-                                        on_change=self.update_output)
+                                        on_change=self.update_output).classes('w-24')
         ui.separator()
         ui.label('Input Conditions').classes('text-lg mt-6')
         self.input_condition_type = ui.label('Conditions are Currently Custom.')
@@ -35,25 +35,25 @@ class VolumeConverterPage:
             ui.button('DIN 1343', on_click=lambda: self.set_input_conditions(conditions_DIN1343_liters, "Conditions are Currently DIN 1343 Conditions"))
         
         with ui.row().classes('items-center gap-2'):
-            self.temperature_input = ui.number(label='Temperature', value=20.0, on_change=self.input_condition_changed).classes('w-24')
+            self.temperature_input = ui.number(label='Temperature', value=20.0, on_change=self.input_condition_changed)
             self.temperature_input_unit = ui.select(options=temperature_units,
                                             value=temperature_units[0],
                                             with_input=True,
-                                            on_change=self.input_condition_changed)
+                                            on_change=self.input_condition_changed).classes('w-24')
         with ui.row().classes('items-center gap-2'):
-            self.pressure_input = ui.number(label='Gauge Pressure', value=80.0, on_change=self.input_condition_changed).classes('w-24')
+            self.pressure_input = ui.number(label='Gauge Pressure', value=80.0, on_change=self.input_condition_changed)
             self.pressure_input_unit = ui.select(options=pressure_units,
                                             value='psi',
                                             with_input=True,
-                                            on_change=self.input_condition_changed)
+                                            on_change=self.input_condition_changed).classes('w-24')
         with ui.row().classes('items-center gap-2'):
-            self.pressure_atm_input = ui.number(label='Atmospheric Pressure', value=1.0, on_change=self.input_condition_changed).classes('w-24')
+            self.pressure_atm_input = ui.number(label='Atmospheric Pressure', value=1.0, on_change=self.input_condition_changed)
             self.pressure_atm_input_unit = ui.select(options=pressure_units,
                                             value='bar',
                                             with_input=True,
-                                            on_change=self.input_condition_changed)
+                                            on_change=self.input_condition_changed).classes('w-24')
         with ui.row().classes('items-center gap-2'):
-            self.RH_input = ui.number(label='Relative Humidity', value=0.0, min=0.0, max=100, on_change=self.input_condition_changed).classes('w-24')
+            self.RH_input = ui.number(label='Relative Humidity', value=0.0, min=0.0, max=100, on_change=self.input_condition_changed).classes('w-43')
             ui.label('%')
         
         ui.separator()
@@ -68,26 +68,26 @@ class VolumeConverterPage:
             ui.button('DIN 1343', on_click=lambda: self.set_output_conditions(conditions_DIN1343_liters, "Conditions are Currently DIN 1343 Conditions"))
         
         with ui.row().classes('items-center gap-2'):
-            self.temperature_output = ui.number(label='Temperature', value=20.0, on_change=self.output_condition_changed).classes('w-24')
+            self.temperature_output = ui.number(label='Temperature', value=20.0, on_change=self.output_condition_changed)
             self.temperature_output_unit = ui.select(options=temperature_units,
                                             value=temperature_units[0],
                                             with_input=True,
                                             new_value_mode='add',
-                                            on_change=self.output_condition_changed)
+                                            on_change=self.output_condition_changed).classes('w-24')
         with ui.row().classes('items-center gap-2'):
-            self.pressure_output = ui.number(label='Pressure', value=80.0, on_change=self.output_condition_changed).classes('w-24')
+            self.pressure_output = ui.number(label='Pressure', value=80.0, on_change=self.output_condition_changed)
             self.pressure_output_unit = ui.select(options=pressure_units,
                                             value='psi',
                                             with_input=True,
-                                            on_change=self.output_condition_changed)
+                                            on_change=self.output_condition_changed).classes('w-24')
         with ui.row().classes('items-center gap-2'):
-            self.pressure_atm_output = ui.number(label='Atmospheric Pressure', value=1, on_change=self.output_condition_changed).classes('w-24')
+            self.pressure_atm_output = ui.number(label='Atmospheric Pressure', value=1, on_change=self.output_condition_changed)
             self.pressure_atm_output_unit = ui.select(options=pressure_units,
                                             value='bar',
                                             with_input=True,
-                                            on_change=self.output_condition_changed)
+                                            on_change=self.output_condition_changed).classes('w-24')
         with ui.row().classes('items-center gap-2'):
-            self.RH_output = ui.number(label='Relative Humidity', value=0.0, min=0.0, max=100, on_change=self.output_condition_changed).classes('w-24')
+            self.RH_output = ui.number(label='Relative Humidity', value=0.0, min=0.0, max=100, on_change=self.output_condition_changed).classes('w-43')
             ui.label('%')
     
     def update_output(self):
