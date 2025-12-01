@@ -137,12 +137,7 @@ class BeamCalculatorPage:
                     self.max_deflection_pos_label = ui.label(f"{self.max_deflection_pos_qty.magnitude:.6f}")
                     ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
                     self.max_deflection_pos_unit = ui.select(options=length_units, value='m', on_change=self.deflection_pos_unit_changed)
-            ui.label('Beam Setup Plot').classes('text-lg mt-6')
-            self.load_plot = ui.plotly(generate_load_diagram(self.results)).classes('w-full')
-            ui.label('Shear and Moment Diagrams')
-            self.shear_moment_plot = ui.plotly(generate_shear_moment_diagram(self.results)).classes('w-full')
-            ui.label('Deflection and Angle Diagram')
-            self.deflection_plot = ui.plotly(generate_deflection_diagram(self.results)).classes('w-full')
+            self.beam_plot = ui.plotly(generate_beam_plot(self.results)).classes('w-full')
             
         
     def add_fixture_row(self):
@@ -318,14 +313,8 @@ class BeamCalculatorPage:
         self.max_deflection_unit.value = f"{self.max_deflection_qty.units:~P}"
         self.max_deflection_pos_unit.value = f"{self.max_deflection_pos_qty.units:~P}"
         # Update each plotly component by assigning a new figure
-        self.load_plot.figure = generate_load_diagram(self.results)
-        self.shear_moment_plot.figure = generate_shear_moment_diagram(self.results)
-        self.deflection_plot.figure = generate_deflection_diagram(self.results)
-
-        # Optionally trigger redraw if needed:
-        self.load_plot.update()
-        self.shear_moment_plot.update()
-        self.deflection_plot.update()
+        self.beam_plot.figure = generate_beam_plot(self.results)
+        self.beam_plot.update()
         ui.notify("Beam Results Updated.")
         
     def deflection_unit_changed(self):
