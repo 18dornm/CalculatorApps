@@ -6,6 +6,8 @@ class BeamCalculatorPage:
     def __init__(self):
         self.is_updating = False
         self.results = {
+        'fixtures': [],
+        'loads_moments': [],
         'unknowns': None,
         'important_locations': None,
         'beam_x_values': None,
@@ -15,8 +17,11 @@ class BeamCalculatorPage:
         'y_angle_plot': None,
         'y_deflection_plot': None,
         'max_deflection': 0.0,
-        'max_deflection_pos': 0.0
+        'max_deflection_pos': 0.0,
+
     }
+        self.fixtures = []
+        self.distr_load_rows = []
         self.build_ui()
 
 
@@ -108,7 +113,7 @@ class BeamCalculatorPage:
             
             # Container for data rows
             self.distr_loads_rows_container = ui.column().classes('gap-2')
-            self.distr_load_rows = []
+            
             
             # Add row buttons
             with ui.row():
@@ -154,6 +159,7 @@ class BeamCalculatorPage:
                 })
             except:
                 ui.notify('Error: Check Beam Fixture Data.')
+                return
 
         return data
     
@@ -186,9 +192,11 @@ class BeamCalculatorPage:
                     'load_start_qty': Q(row.load_start_value.value, row.load_unit.value),
                     'load_end_qty': Q(row.load_end_value.value, row.load_unit.value)
                 })
-                return data
+                
             except:
                 ui.notify('Error: Check Beam Distributed Load Data.')
+                return
+        return data
     
     def get_point_load_data(self):
         data = []
@@ -201,9 +209,10 @@ class BeamCalculatorPage:
                     'load_start_qty': Q(row.load_value.value, row.load_unit.value),
                     'load_end_qty': None
                 })
-                return data
             except:
                 ui.notify('Error: Check Beam Point Load Data.')
+                return
+        return data
          
     def material_change(self):
         self.is_updating = True
@@ -236,13 +245,13 @@ class BeamCalculatorPage:
             return
         # Check if inputs are correct (fixture position inside bounds)
         fixture_dict_list = self.get_fixture_data()
-        fixtures = []
+        self.fixtures = []
         for fixture in fixture_dict_list:
             fixture_pos_m = fixture['qty'].to('m')
             if fixture['qty'] > beam_length_qty:
                 ui.notify('Fixture position not on beam. Did not solve beam.')
                 return
-            fixtures.append([fixture['type'], fixture_pos_m.magnitude])
+            self.fixtures.append([fixture['type'], fixture_pos_m.magnitude])
         
         loads_moments = []
         distr_loads = self.get_distr_load_data()
@@ -299,7 +308,7 @@ class BeamCalculatorPage:
                     loads_moments.append([load['type'], load_pos.magnitude, None, load_val.magnitude])
         
         # now solve the beam (eventually put this in a try except)
-        self.results = solve_beam(loads_moments, fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, num_points=250)
+        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, num_points=250)
         
         self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
         self.max_deflection_qty = self.max_deflection_qty.to('mm')
@@ -318,20 +327,7 @@ class BeamCalculatorPage:
         self.shear_moment_plot.update()
         self.deflection_plot.update()
         ui.notify("Beam Results Updated.")
-
-
-    def update_results_section(self):
-        self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
-        self.max_deflection_qty = self.max_deflection_qty.to('mm')
-        self.max_deflection_pos_qty = Q(self.results['max_deflection_pos'], 'm')
-        self.max_deflection_label.text = f"{self.max_deflection_qty.magnitude:.4f}"
-        self.max_deflection_pos_label.text = f"{self.max_deflection_pos_qty.magnitude:.6f}"
-        self.max_deflection_unit.value = f"{self.max_deflection_qty.units:~P}"
-        self.max_deflection_pos_unit.value = f"{self.max_deflection_pos_qty.units:~P}"
         
-
-        
-    
     def deflection_unit_changed(self):
         self.max_deflection_qty = self.max_deflection_qty.to(self.max_deflection_unit.value)
         self.max_deflection_label.text = f"{self.max_deflection_qty.magnitude:.4f}"

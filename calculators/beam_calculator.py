@@ -305,7 +305,7 @@ def create_ab(fixtures, theta_coeffs, u_coeffs, p_coeffs, overall_length, select
                 elif theta_coeffs[j][0] < 1000:
                     a[-1].append(value_theta)
 
-        elif fixtures[i][0] == "Pinned" or fixtures[i][0] == "Roller":
+        elif fixtures[i][0] == "Pinned/Roller":
             b.append(0)
             a.append([])
 
@@ -334,7 +334,7 @@ def create_ab(fixtures, theta_coeffs, u_coeffs, p_coeffs, overall_length, select
         return real_b
 
 
-def evalulate_beam_value(coeffs, x_val):
+def evaluate_beam_value(coeffs, x_val):
     y_val = 0
     for j in range(len(coeffs)):
         y_val += eval_singularity(coeffs[j], x_val)
@@ -347,7 +347,7 @@ def create_points(coeffs, overall_length, num_points, selection='y'):
     y_vals = []
     x_vals = []
     for i in range(num_points+1):
-        y_val = evalulate_beam_value(coeffs, x_val)
+        y_val = evaluate_beam_value(coeffs, x_val)
         y_vals.append(y_val)
         x_vals.append(x_val)
         x_val += x_increment
@@ -466,12 +466,13 @@ def solve_beam(loads_moments, fixtures, overall_length, moment_of_inertia, young
     y_moment_plot = create_points(m_coefficients_new, overall_length, num_points)
     y_angle_plot = create_points(theta_coefficients_new, overall_length, num_points)
     y_deflection_plot = create_points(u_coefficients_new, overall_length, num_points)
-    # unknowns, important_locations, beam_x_values, y_force_plot, y_shear_plot, y_moment_plot, y_angle_plot, y_deflection_plot
     y_deflection_plot = np.array(y_deflection_plot)
     max_deflection_idx = np.argmax(np.absolute(y_deflection_plot))
     max_deflection = y_deflection_plot[max_deflection_idx]
     max_deflection_pos = beam_x_values[max_deflection_idx]
     results = {
+        'fixtures': fixtures,
+        'loads_moments': loads_moments,
         'unknowns': solns,
         'important_locations': important_locations,
         'beam_x_values': beam_x_values,
@@ -494,6 +495,77 @@ def add_beam_context(fig, beam_x_values):
         mode='lines', line=dict(color='black', width=5), 
         name='Beam', hoverinfo='none', showlegend=False
     ))
+
+def generate_beam_plot(results:dict):
+    """Generates the Plotly Figure for the Applied Forces, Fixtures, Shear Moment Diagram,
+    Bending Moment Diagram, Angle of Deflection, and Deflection of the beam."""
+    # extract values from input dict
+    beam_x_values = results['beam_x_values']
+    y_force_plot = results['y_force_plot']
+    y_shear_plot = results['y_shear_plot']
+    y_moment_plot = results['y_moment_plot']
+    y_deflection_plot = results['y_deflection_plot']
+    y_angle_plot = results['y_angle_plot']
+    max_deflection_y = results['max_deflection']
+    max_deflection_x = results['max_deflection_pos']
+
+    fig=go.Figure()
+
+    # Add Beam Context
+    flat_beam = np.zeros(np.shape(beam_x_values))
+    fig.add_trace(go.Scatter(
+        x=beam_x_values, y=flat_beam, 
+        mode='lines', line=dict(color='black', width=5), 
+        name='Beam', hoverinfo='none', showlegend=False
+    ))
+
+    # Add Fixtures
+    for fixture in results['fixtures']:
+        if fixture[0] == "Pinned/Roller":
+            fig.add_trace(go.Scatter(
+                x=[fixture[1]], y=[0],
+                marker_symbol="arrow-up",
+                marker_color="black",
+                marker_size=15
+            ))
+        if fixture[0] == "Fixed":
+            fig.add_trace(go.Scatter(
+                x=[fixture[1]], y=[0],
+                marker_symbol="square",
+                marker_color="black",
+                marker_size=15
+            ))
+    
+    # Add Point Loads and Moments
+    for load in results['loads_moments']:
+        if load[0] == 'Concentrated Force':
+            fig.add_trace(go.Scatter(
+                x=[load[1]], y=[0],
+                marker_symbol="arrow-down",
+                marker_color="red",
+                marker_size=15
+            ))
+        if load[0] == 'Concentrated Moment':
+            print("Concentrated Force Plotting")
+            if load[3]>0:
+                fig.add_trace(go.Scatter(
+                x=[load[1]], y=[0],
+                marker_symbol="circle-x",
+                marker_color="red",
+                marker_size=15
+            ))
+            if load[3]<0:
+                fig.add_trace(go.Scatter(
+                x=[load[1]], y=[0],
+                marker_symbol="circle-cross",
+                marker_color="red",
+                marker_size=15
+            ))
+    
+    # Add Distributed Loads
+
+
+
 
 
 def generate_load_diagram(results: dict):
@@ -519,17 +591,57 @@ def generate_load_diagram(results: dict):
         fill='tozeroy', fillcolor='rgba(255, 0, 0, 0.4)',
         mode='none', name='Distributed Load Area', showlegend=False
     ))
-
+    # 3. Add fixtures
+    for fixture in results['fixtures']:
+        if fixture[0] == "Pinned/Roller":
+            fig.add_trace(go.Scatter(
+                x=[fixture[1]], y=[0],
+                marker_symbol="arrow-up",
+                marker_color="black",
+                marker_size=15
+            ))
+        if fixture[0] == "Fixed":
+            fig.add_trace(go.Scatter(
+                x=[fixture[1]], y=[0],
+                marker_symbol="square",
+                marker_color="black",
+                marker_size=15
+            ))
+    #4. Add loads and moments
+    for load in results['loads_moments']:
+        if load[0] == 'Concentrated Force':
+            fig.add_trace(go.Scatter(
+                x=[load[1]], y=[0],
+                marker_symbol="arrow-down",
+                marker_color="red",
+                marker_size=15
+            ))
+        if load[0] == 'Concentrated Moment':
+            print("Concentrated Force Plotting")
+            if load[3]>0:
+                fig.add_trace(go.Scatter(
+                x=[load[1]], y=[0],
+                marker_symbol="circle-x",
+                marker_color="red",
+                marker_size=15
+            ))
+            if load[3]<0:
+                fig.add_trace(go.Scatter(
+                x=[load[1]], y=[0],
+                marker_symbol="circle-cross",
+                marker_color="red",
+                marker_size=15
+            ))
     fig.update_layout(
         #title='Applied Distributed Load',
         xaxis_title='Distance Along Beam',
         yaxis_title='Applied Load',
-        height=300
+        #height=300
     )
     fig.update_layout(
         legend=dict(
             orientation="h",  # 'h' for horizontal (spreads labels left-to-right)
-            yanchor="bottom", # Anchor point for the Y position is the bottom of the legend box
+            yanchor="top", # Anchor point for the Y position is the bottom of the legend box
             y=-0.3,           # Position the legend below the plot area (0 is the bottom edge)
             xanchor="center", # Anchor point for the X position is the center of the legend box
             x=0.5             # Center the legend horizontally
