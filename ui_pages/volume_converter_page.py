@@ -7,7 +7,6 @@ class VolumeConverterPage:
         self.build_ui()
 
     def build_ui(self):
-        ui.label('Volume Converter').classes('text-lg mt-6')
         with ui.row().classes('items-center gap-2'):
             self.volume_input = ui.number(label='Enter a Volume', value=1.0, on_change=self.update_output).classes('w-24')
             self.volume_input_unit = ui.select(options=volume_units,
@@ -24,7 +23,7 @@ class VolumeConverterPage:
                                         new_value_mode='add-unique',
                                         on_change=self.update_output).classes('w-24')
         ui.separator()
-        ui.label('Input Conditions').classes('text-lg mt-6')
+        ui.label('Input Conditions').classes('text-lg mt-6 font-bold')
         self.input_condition_type = ui.label('Conditions are Currently Custom.')
         with ui.row().classes('items-center gap-2'):
             ui.label('Set to...')
@@ -57,7 +56,7 @@ class VolumeConverterPage:
             ui.label('%')
         
         ui.separator()
-        ui.label('Output Conditions').classes('text-lg mt-6')
+        ui.label('Output Conditions').classes('text-lg mt-6 font-bold')
         self.output_condition_type = ui.label('Conditions are Currently Custom.')
         with ui.row().classes('items-center gap-2'):
             ui.label('Set to...')

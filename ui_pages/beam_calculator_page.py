@@ -26,120 +26,185 @@ class BeamCalculatorPage:
 
 
     def build_ui(self):
-        with ui.row().classes('items-center gap-2'):
-            ui.label('Beam Calculator').classes('text-lg mt-6')
-            with ui.icon('o_info').props('flat dense round size=sm').classes('bg-white text-black'):
-                ui.tooltip("This beam calculator uses Euler-Bernoulli Beam theory. It isn't very accurate for beams with small L/D ratios.\nIt was also made by an idiot. Use at your own risk.")
-        ui.separator()
-        ui.label('Inputs and Beam Setup').classes('text-lg mt-6')
-        ui.label('Beam Inputs').classes('text-md font-bold')
-        with ui.row():
-            self.beam_length = ui.number(label='Beam Length', value=48, min=0.0)
-            self.beam_length_unit = ui.select(options=length_units, value='in')
-        with ui.row():
-            self.second_moment_area = ui.number(label='Second Moment of Area', value=0.55176, min=0.0)
-            self.second_moment_area_unit = ui.select(options=second_moment_of_area_units, value='in⁴')
-        with ui.row():
-            self.cross_section_area = ui.number(label="(Optional) Cross Sectional Area", value=0.9375, min=0.0)
-            self.cross_section_area_unit = ui.select(options=area_units, value="in²")
-
-        ui.label('Material Inputs').classes('text-md font-bold')
-        self.material_quickselect = ui.select(label='Material Selection', options=materials_list, value='Custom', on_change=self.material_change).classes('w-64')
-        with ui.row():
-            self.modulus = ui.number(label='Modulus of Elasticity', value=29000, min=0.0, on_change=self.material_prop_change)
-            self.modulus_unit = ui.select(options=stress_units, value='ksi', on_change=self.material_prop_change)
-        with ui.row():
-            self.density = ui.number(label='(Optional) Material Density', value=0.284, min=0.0, on_change=self.material_prop_change)
-            self.density_unit = ui.select(options=density_units, value='lb/in³', on_change=self.material_prop_change)
-        with ui.row():
-            self.yield_strength = ui.number(label='(Optional) Yield Strength', value=36.0, min=0.0, on_change=self.material_prop_change)
-            self.yield_strength_unit = ui.select(options=stress_units, value='ksi', on_change=self.material_prop_change)
-        ui.separator()
-
-        ui.label('Beam Fixture and Load Setup').classes('text-lg mt-6')
-        ui.label('Beam Fixtures').classes('text-md font-bold')
-        self.beam_fixture_table = ui.column().classes('gap-2')
+        #ui.label('Beam Calculator').classes('text-lg mt-6')
+        with ui.expansion(text="Calculator Information"):
+            ui.restructured_text('''
+                                This beam calculator uses Singularity Functions and Euler-Bernoulli Beam Theory to calculate beam deflections.
+                                    
+                                It is not very accurate for small L/D ratios. It was also made by an idiot so use at your own risk.
+                                    
+                                The "0" position along the beam is always the left-hand side. All beam position values must be positive.
+                                
+                                For force inputs, positive is up and negative is down. Gravity points downwards.
+                                
+                                For moment inputs, counterclockwise is positive.
+                                 
+                                Material Properties marked (Optional) only affect beam stress and weight calculations, not deflections.
+                                ''')
         
-        with self.beam_fixture_table:
-            # Header row
-            with ui.row().classes('items-center gap-2'):
-                ui.label('Type').style('width: 150px')
-                ui.label('Position').style('width: 120px')
-                ui.label('Position Unit').style('width: 120px')
-                ui.label('').style('width: 40px')
-            
-            # Container for data rows
-            self.fixture_rows_container = ui.column().classes('gap-2')
-            self.fixture_rows = []
-            
-            # Add row button
-            ui.button('Add Row', icon='add', on_click=self.add_fixture_row).props('flat color=grey-8')
-        #ui.separator()
-
-        ui.label('Beam Point Loads and Moments').classes('text-md font-bold')
-        self.point_loads_table = ui.column().classes('gap-2')
-        with self.point_loads_table:
-            # Header row
-            with ui.row().classes('items-center gap-2'):
-                ui.label('Type').style('width: 150px')
-                ui.label('Position').style('width: 120px')
-                ui.label('Position Unit').style('width: 120px')
-                ui.label('Load Value').style('width: 120px')
-                ui.label('Load Unit').style('width: 120px')
-                ui.label('').style('width: 40px')
-            
-            # Container for data rows
-            self.loads_rows_container = ui.column().classes('gap-2')
-            self.load_rows = []
-            
-            # Add row buttons
-            ui.button('Add Row', icon='add', on_click=lambda: self.add_load_row('Point')).props('flat color=grey-8')
-
-        #ui.separator()
-
-        ui.label('Beam Distributed Loads').classes('text-md font-bold')
-        self.distributed_loads_table = ui.column().classes('gap-2')
-        
-        with self.distributed_loads_table:
-            # Header row
-            with ui.row().classes('items-center gap-2 font-bold'):
-                ui.label('Start Position').style('width: 120px')
-                ui.label('End Position').style('width: 120px')
-                ui.label('Position Unit').style('width: 120px')
-                ui.label('Load Start Value').style('width: 120px')
-                ui.label('Load End Value').style('width: 120px')
-                ui.label('Load Unit').style('width: 120px')
-                ui.label('').style('width: 40px')
-            
-            # Container for data rows
-            self.distr_loads_rows_container = ui.column().classes('gap-2')
-            
-            
-            # Add row buttons
+        ui.separator()
+        ui.label('Inputs and Beam Setup').classes('text-lg mt-6 font-bold')
+        with ui.card().classes('w-80'):
+            ui.label('Beam Inputs').classes('text-md font-italic')
             with ui.row():
-                ui.button('Add Row', icon='add', on_click=lambda: self.add_load_row('Distributed')).props('flat color=grey-8')
-                ui.button('Add Weight of Beam', icon='add', on_click=self.add_gravity_force).props('flat color=grey-8')
-            ui.separator()
-            ui.label('')
-            ui.button("Solve Beam", on_click=self.solve_beam_button)
-            ui.separator()
-            ui.label('Beam Results').classes('text-lg mt-6')
-            self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
-            self.max_deflection_qty = self.max_deflection_qty.to('mm')
-            self.max_deflection_pos_qty = Q(self.results['max_deflection_pos'], 'm')
-            with ui.row().classes('items-center gap-2'):
-                    ui.label('Max Deflection = ')
-                    self.max_deflection_label = ui.label(f"{self.max_deflection_qty.magnitude:.4f}")
-                    ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
-                    self.max_deflection_unit = ui.select(options=length_units, value='mm', on_change=self.deflection_unit_changed)
-            with ui.row().classes('items-center gap-2'):
-                    ui.label('Location of Max Deflection = ')
-                    self.max_deflection_pos_label = ui.label(f"{self.max_deflection_pos_qty.magnitude:.6f}")
-                    ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
-                    self.max_deflection_pos_unit = ui.select(options=length_units, value='m', on_change=self.deflection_pos_unit_changed)
-            self.beam_plot = ui.plotly(generate_beam_plot(self.results)).classes('w-full')
+                self.beam_length = ui.number(label='Beam Length', value=48, min=0.0)
+                self.beam_length_unit = ui.select(options=length_units, value='in')
+            with ui.row():
+                self.second_moment_area = ui.number(label='Second Moment of Area', value=0.55176, min=0.0)
+                self.second_moment_area_unit = ui.select(options=second_moment_of_area_units, value='in⁴')
+            with ui.row():
+                self.cross_section_area = ui.number(label="(Optional) Cross Sectional Area", value=0.9375, min=0.0)
+                self.cross_section_area_unit = ui.select(options=area_units, value="in²")
+        with ui.card().classes('w-80'):
+            ui.label('Material Inputs').classes('text-md')
+            self.material_quickselect = ui.select(label='Material Selection', options=materials_list, value='Custom', on_change=self.material_change).classes('w-64')
+            with ui.row():
+                self.modulus = ui.number(label='Modulus of Elasticity', value=29000, min=0.0, on_change=self.material_prop_change)
+                self.modulus_unit = ui.select(options=stress_units, value='ksi', on_change=self.material_prop_change)
+            with ui.row():
+                self.density = ui.number(label='(Optional) Material Density', value=0.284, min=0.0, on_change=self.material_prop_change)
+                self.density_unit = ui.select(options=density_units, value='lb/in³', on_change=self.material_prop_change)
+            with ui.row():
+                self.yield_strength = ui.number(label='(Optional) Yield Strength', value=36.0, min=0.0, on_change=self.material_prop_change)
+                self.yield_strength_unit = ui.select(options=stress_units, value='ksi', on_change=self.material_prop_change)
+        ui.separator()
+
+        ui.label('Beam Fixture and Load Setup').classes('text-lg mt-6 font-bold')
+
+        with ui.card().classes('w-210'):
+            ui.label('Beam Fixtures').classes('text-md')
+            self.beam_fixture_table = ui.column().classes('gap-2')
             
+            with self.beam_fixture_table:
+                # Header row
+                with ui.row().classes('items-center gap-2'):
+                    ui.label('Type').style('width: 150px')
+                    ui.label('Position').style('width: 120px')
+                    ui.label('Position Unit').style('width: 120px')
+                    ui.label('').style('width: 40px')
+                
+                # Container for data rows
+                self.fixture_rows_container = ui.column().classes('gap-2')
+                self.fixture_rows = []
+                
+                # Add row button
+                ui.button('Add Row', icon='add', on_click=self.add_fixture_row).props('flat color=grey-8')
+
+        with ui.card().classes('w-210'):
+            ui.label('Beam Point Loads and Moments').classes('text-md')
+            self.point_loads_table = ui.column().classes('gap-2')
+            with self.point_loads_table:
+                # Header row
+                with ui.row().classes('items-center gap-2'):
+                    ui.label('Type').style('width: 150px')
+                    ui.label('Position').style('width: 120px')
+                    ui.label('Position Unit').style('width: 120px')
+                    ui.label('Load Value').style('width: 120px')
+                    ui.label('Load Unit').style('width: 120px')
+                    ui.label('').style('width: 40px')
+                
+                # Container for data rows
+                self.loads_rows_container = ui.column().classes('gap-2')
+                self.load_rows = []
+                
+                # Add row buttons
+                ui.button('Add Row', icon='add', on_click=lambda: self.add_load_row('Point')).props('flat color=grey-8')
+
+        #ui.separator()
+        with ui.card().classes('w-210'):
+            ui.label('Beam Distributed Loads').classes('text-md')
+            self.distributed_loads_table = ui.column().classes('gap-2')
+            
+            with self.distributed_loads_table:
+                # Header row
+                with ui.row().classes('items-center gap-2 text-xs'):
+                    ui.label('Start Position').style('width: 120px')
+                    ui.label('End Position').style('width: 120px')
+                    ui.label('Position Unit').style('width: 120px')
+                    ui.label('Load Start Value').style('width: 120px')
+                    ui.label('Load End Value').style('width: 120px')
+                    ui.label('Load Unit').style('width: 120px')
+                    ui.label('').style('width: 40px')
+                
+                # Container for data rows
+                self.distr_loads_rows_container = ui.column().classes('gap-2')
+                
+                
+                # Add row buttons
+                with ui.row():
+                    ui.button('Add Row', icon='add', on_click=lambda: self.add_load_row('Distributed')).props('flat color=grey-8')
+                    ui.button('Add Weight of Beam', icon='add', on_click=self.add_gravity_force).props('flat color=grey-8')
+
+        ui.separator()
+        ui.label('')
+        ui.button("Solve Beam", on_click=self.solve_beam_button)
+        ui.separator()
         
+        ui.label('Beam Results').classes('text-lg mt-6 font-bold')
+        self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
+        self.max_deflection_qty = self.max_deflection_qty.to('mm')
+        self.max_deflection_pos_qty = Q(self.results['max_deflection_pos'], 'm')
+        with ui.row().classes('items-center gap-2'):
+            ui.label('Max Deflection = ')
+            self.max_deflection_label = ui.label(f"{self.max_deflection_qty.magnitude:.4f}")
+            ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
+            self.max_deflection_unit = ui.select(options=length_units, value='mm', on_change=self.deflection_unit_changed)
+        with ui.row().classes('items-center gap-2'):
+            ui.label('Location of Max Deflection = ')
+            self.max_deflection_pos_label = ui.label(f"{self.max_deflection_pos_qty.magnitude:.6f}")
+            ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
+            self.max_deflection_pos_unit = ui.select(options=length_units, value='m', on_change=self.deflection_pos_unit_changed)
+        with ui.row().classes('items-center gap-2'):
+            self.plot_length_unit = ui.select(options=length_units, value='m', on_change=self.plot_unit_change, label="Plot Length Unit").classes('w-32')
+            self.plot_force_unit = ui.select(options=force_units, value='N', on_change=self.plot_unit_change, label="Plot Force Unit").classes('w-32')
+        self.beam_plot = ui.plotly(generate_beam_plot(self.results)).classes('w-full')
+            
+    def convert_plot_units(self, new_length_unit:str, new_force_unit:str):
+        converted_results = self.results
+        old_length_unit = 'm'
+        old_force_unit = 'N'
+        try:
+            length_conversion = 1*u(old_length_unit).to(new_length_unit).magnitude
+            old_force_per_length_unit = f"{old_force_unit} / {old_length_unit}"
+            new_force_per_length_unit = f"{new_force_unit} / {new_length_unit}"
+            force_per_length_conversion = 1*u(old_force_per_length_unit).to(new_force_per_length_unit).magnitude
+            force_conversion = 1*u(old_force_unit).to(new_force_unit).magnitude
+            old_torque_unit = f"{old_force_unit} * {old_length_unit}"
+            new_torque_unit = f"{new_force_unit} * {new_length_unit}"
+            moment_conversion = 1*u(old_torque_unit).to(new_torque_unit).magnitude
+        except:
+            ui.notify("Could not convert plot units.")
+            return self.results, 'm', 'N'
+
+        converted_results['beam_x_values'] = [x * length_conversion for x in self.results['beam_x_values']]
+        converted_results['y_force_plot'] = [f * force_per_length_conversion for f in self.results['y_force_plot']]
+        converted_results['y_shear_plot'] = [s * force_conversion for s in self.results['y_shear_plot']]
+        converted_results['y_moment_plot'] = [m * moment_conversion for m in self.results['y_moment_plot']]
+        converted_results['y_deflection_plot'] = [d * length_conversion for d in self.results['y_deflection_plot']]
+        converted_results['max_deflection'] = self.results['max_deflection'] * length_conversion
+        converted_results['max_deflection_pos'] = self.results['max_deflection_pos'] * length_conversion
+
+        for fixture in converted_results['fixtures']:
+            fixture[1] = fixture[1] * length_conversion
+        for load in converted_results['loads_moments']:
+            load[1] = load[1] * length_conversion
+            if load[0] == 'Constant Distributed Load' or load[0] == 'Linear Distributed Load':
+                load[2] = load[2] * length_conversion
+            load[3] = load[3] * length_conversion
+        
+        return converted_results, new_length_unit, new_force_unit
+    
+    def plot_unit_change(self):
+        # convert results values to new units
+        # refresh plots
+        converted_results, out_length_unit, out_force_unit= self.convert_plot_units(self.plot_length_unit.value, self.plot_force_unit.value)
+        self.beam_plot.figure = generate_beam_plot(converted_results, out_length_unit, out_force_unit)
+        #BUG: plot doesn't re-update correctly from multiple unit changes
+        self.beam_plot.update()
+        ui.notify("Beam Results Updated.")
+        return
+    
+
     def add_fixture_row(self):
         row = BeamFixtureRow(self.fixture_rows_container, page=self)
         self.fixture_rows.append(row)
@@ -313,6 +378,8 @@ class BeamCalculatorPage:
         self.max_deflection_unit.value = f"{self.max_deflection_qty.units:~P}"
         self.max_deflection_pos_unit.value = f"{self.max_deflection_pos_qty.units:~P}"
         # Update each plotly component by assigning a new figure
+        self.plot_length_unit.value = 'm'
+        self.plot_force_unit.value = 'N'
         self.beam_plot.figure = generate_beam_plot(self.results)
         self.beam_plot.update()
         ui.notify("Beam Results Updated.")

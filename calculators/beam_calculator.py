@@ -1,6 +1,5 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from PIL import Image
 import numpy as np
 from pint import UnitRegistry
 u = UnitRegistry()
@@ -114,6 +113,7 @@ def find_unknowns(fixtures):
     
     return unknowns
 
+
 def find_coefficients(forces, unknowns, youngs_modulus, moment_of_inertia, overall_length, selection):
     # go through forces and moments and add them to p coefficients.
     # use the singularity function rules to determine exponent. identifier is 1000+ sequential
@@ -198,7 +198,7 @@ def find_coefficients(forces, unknowns, youngs_modulus, moment_of_inertia, overa
     if selection == "u(x) Coefficients":
         return u_coeffs
 
-# Assuming an integrate_singularity function needs to be defined separately
+
 def integrate_singularity(coeffs):
     # coeffs comes in the form [id, coeff, location, exp]
     n = coeffs[3]
@@ -503,7 +503,9 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 marker_symbol="arrow-up",
                 marker_color="black",
                 marker_size=15,
-                showlegend=False
+                showlegend=False,
+                hoverinfo="text",
+                hovertext=["Pinned/Roller Support"]
             ), row=row_num, col=col_num)
         if fixture[0] == "Fixed":
             fig.add_trace(go.Scatter(
@@ -511,7 +513,9 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 marker_symbol="square",
                 marker_color="black",
                 marker_size=15,
-                showlegend=False
+                showlegend=False,
+                hoverinfo="text",
+                hovertext=["Fixed Support"]
             ), row=row_num, col=col_num)
     #4. Add loads and moments
     for load in results['loads_moments']:
@@ -535,7 +539,7 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 y=[0],
                 mode="markers+text",
                 marker=dict(size=5, opacity=0),
-                text=["↺" if load[3] > 0 else "↻"],
+                text=["↺" if load[3] < 0 else "↻"],
                 textposition="middle center",
                 textfont=dict(size=28, color="red", weight="bold"),
                 hoverinfo="text",
@@ -544,7 +548,7 @@ def add_beam_context(fig, results:dict, row_num, col_num):
             ), row=row_num, col=col_num)
 
 
-def generate_beam_plot(results: dict):
+def generate_beam_plot(results: dict, length_unit:str='m', force_unit:str='N'):
     """
     Generates a single Plotly Figure with three stacked subplots, 
     aligning zeros on dual-axis plots.
@@ -578,11 +582,12 @@ def generate_beam_plot(results: dict):
     # --- ROW 1: Distributed Load ---
     
     # Add Distributed Load (Fill area is a good representation)
+    load_name = f"Distributed Load ({force_unit})"
     fig.add_trace(go.Scatter(
         x=beam_x_values, y=y_force_plot,
         fill='tozeroy', fillcolor='rgba(255, 0, 0, 0.4)',
         mode='lines', line=dict(color='red', width=2),
-        name='Distributed Load', showlegend=False
+        name=load_name, showlegend=False
     ), row=1, col=1)
     
     # Add a flat beam line for context
@@ -603,17 +608,19 @@ def generate_beam_plot(results: dict):
         (range_s_min, range_s_max), (range_m_min, range_m_max)= (-10, 10), (-10, 10)
     
     # Shear (Primary Y)
+    shear_name = f"Shear Force ({force_unit})"
     fig.add_trace(go.Scatter(
         x=beam_x_values, y=y_shear_plot, 
         mode='lines', line=dict(color='blue', width=2), 
-        name='Shear Force'
+        name=shear_name
     ), row=2, col=1, secondary_y=False)
 
     # Moment (Secondary Y)
+    bending_name = f"Bending Moment ({force_unit}*{length_unit})"
     fig.add_trace(go.Scatter(
         x=beam_x_values, y=y_moment_plot, 
         mode='lines', line=dict(color='green', width=2), 
-        name='Bending Moment'
+        name=bending_name
     ), row=2, col=1, secondary_y=True)
     
     # Add a flat beam line for context
@@ -635,17 +642,18 @@ def generate_beam_plot(results: dict):
         
 
     # Deflection (Primary Y)
+    deflection_name = f"Deflection ({length_unit})"
     fig.add_trace(go.Scatter(
         x=beam_x_values, y=y_deflection_plot, 
         mode='lines', line=dict(color='purple', width=3), 
-        name='Deflection'
+        name=deflection_name
     ), row=3, col=1, secondary_y=False)
 
     # Angle (Secondary Y)
     fig.add_trace(go.Scatter(
         x=beam_x_values, y=y_angle_plot, 
         mode='lines', line=dict(color='red', width=2), 
-        name='Angle of Deflection'
+        name='Angle of Deflection (rad)'
     ), row=3, col=1, secondary_y=True)
     
     # Max Deflection Point (on the Primary Y-axis of Row 3)
@@ -695,15 +703,16 @@ def generate_beam_plot(results: dict):
         ),
         
         # Enforce zero alignment using the calculated ranges
-        yaxis2=dict(title='Shear Force', color='blue', range=[range_s_min, range_s_max], zeroline=True, zerolinecolor='black'),
-        yaxis3=dict(title='Bending Moment', color='green', overlaying='y2', side='right', range=[range_m_min, range_m_max], zeroline=True, zerolinecolor='black'),
+        yaxis2=dict(title=shear_name, color='blue', range=[range_s_min, range_s_max], zeroline=True, zerolinecolor='black'),
+        yaxis3=dict(title=bending_name, color='green', overlaying='y2', side='right', range=[range_m_min, range_m_max], zeroline=True, zerolinecolor='black'),
         
-        yaxis4=dict(title='Deflection', color='purple', range=[range_d_min, range_d_max], zeroline=True, zerolinecolor='black'),
-        yaxis5=dict(title='Angle Deflection', color='red', overlaying='y4', side='right', range=[range_a_min, range_a_max], zeroline=True, zerolinecolor='black'),
+        yaxis4=dict(title=deflection_name, color='purple', range=[range_d_min, range_d_max], zeroline=True, zerolinecolor='black'),
+        yaxis5=dict(title='Angle of Deflection (rad)', color='red', overlaying='y4', side='right', range=[range_a_min, range_a_max], zeroline=True, zerolinecolor='black'),
     )
     
     # Update X-axis title for the bottom plot only
-    fig.update_xaxes(title_text='Distance Along Beam', row=3, col=1)
+    x_axis_name = f"Distance Along Beam ({length_unit})"
+    fig.update_xaxes(title_text=x_axis_name, row=3, col=1)
     
     return fig
 
@@ -740,192 +749,4 @@ def align_zeros_plotly(min1, max1, min2, max2):
     new_min2 = -new_min_ratio * new_span2
     
     return (new_min1, new_max1), (new_min2, new_max2)
-
-
-def generate_load_diagram(results: dict):
-    """Generates the Plotly Figure for the Applied Load Diagram."""
-    
-    # Extract data from the results dictionary
-    beam_x_values = results['beam_x_values']
-    y_force_plot = results['y_force_plot']
-    
-    fig = go.Figure()
-    
-    # 1. Add Beam Context
-    add_beam_context(fig, beam_x_values)
-    
-    # 2. Add Distributed Load
-    fig.add_trace(go.Scatter(
-        x=beam_x_values, y=y_force_plot,
-        mode='lines', line=dict(color='red', width=2),
-        name='Distributed Load'
-    ))
-    fig.add_trace(go.Scatter(
-        x=beam_x_values, y=y_force_plot,
-        fill='tozeroy', fillcolor='rgba(255, 0, 0, 0.4)',
-        mode='none', name='Distributed Load Area', showlegend=False
-    ))
-    # 3. Add fixtures
-    for fixture in results['fixtures']:
-        if fixture[0] == "Pinned/Roller":
-            fig.add_trace(go.Scatter(
-                x=[fixture[1]], y=[0],
-                marker_symbol="arrow-up",
-                marker_color="black",
-                marker_size=15
-            ))
-        if fixture[0] == "Fixed":
-            fig.add_trace(go.Scatter(
-                x=[fixture[1]], y=[0],
-                marker_symbol="square",
-                marker_color="black",
-                marker_size=15
-            ))
-    #4. Add loads and moments
-    for load in results['loads_moments']:
-        if load[0] == 'Concentrated Force':
-            fig.add_trace(go.Scatter(
-                x=[load[1]], y=[0],
-                marker_symbol="arrow-down",
-                marker_color="red",
-                marker_size=15
-            ))
-        if load[0] == 'Concentrated Moment':
-            if load[3]>0:
-                fig.add_trace(go.Scatter(
-                x=[load[1]], y=[0],
-                marker_symbol="circle-x",
-                marker_color="red",
-                marker_size=15
-            ))
-            if load[3]<0:
-                fig.add_trace(go.Scatter(
-                x=[load[1]], y=[0],
-                marker_symbol="circle-cross",
-                marker_color="red",
-                marker_size=15
-            ))
-    fig.update_layout(
-        #title='Applied Distributed Load',
-        xaxis_title='Distance Along Beam',
-        yaxis_title='Applied Load',
-        #height=300
-    )
-    fig.update_layout(
-        legend=dict(
-            orientation="h",  # 'h' for horizontal (spreads labels left-to-right)
-            yanchor="top", # Anchor point for the Y position is the bottom of the legend box
-            y=-0.3,           # Position the legend below the plot area (0 is the bottom edge)
-            xanchor="center", # Anchor point for the X position is the center of the legend box
-            x=0.5             # Center the legend horizontally
-        )
-    )
-    return fig
-
-
-def generate_shear_moment_diagram(results: dict):
-    """Generates the Plotly Figure for Shear/Moment Diagrams."""
-    
-    # Extract data from the results dictionary
-    beam_x_values = results['beam_x_values']
-    y_shear_plot = results['y_shear_plot']
-    y_moment_plot = results['y_moment_plot']
-
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    
-    # 1. Add Beam Context
-    add_beam_context(fig, beam_x_values)
-
-    # 2. Add Shear (Primary Y)
-    fig.add_trace(go.Scatter(
-        x=beam_x_values, y=y_shear_plot, 
-        mode='lines', line=dict(color='blue', width=2), 
-        name='Shear Force'
-    ), secondary_y=False)
-
-    # 3. Add Moment (Secondary Y)
-    fig.add_trace(go.Scatter(
-        x=beam_x_values, y=y_moment_plot, 
-        mode='lines', line=dict(color='green', width=2), 
-        name='Bending Moment'
-    ), secondary_y=True)
-
-    #fig.update_layout(title='Shear and Bending Moment Diagrams', height=300)
-    fig.update_yaxes(title_text='Shear Force', secondary_y=False, color='blue')
-    fig.update_yaxes(title_text='Bending Moment', secondary_y=True, color='green')
-    fig.update_layout(
-        legend=dict(
-            orientation="h",  # 'h' for horizontal (spreads labels left-to-right)
-            yanchor="bottom", # Anchor point for the Y position is the bottom of the legend box
-            y=-0.3,           # Position the legend below the plot area (0 is the bottom edge)
-            xanchor="center", # Anchor point for the X position is the center of the legend box
-            x=0.5             # Center the legend horizontally
-        )
-    )
-    return fig
-
-
-def generate_deflection_diagram(results: dict):
-    """Generates the Plotly Figure for Deflection/Angle Diagrams."""
-    
-    # Extract data from the results dictionary
-    beam_x_values = results['beam_x_values']
-    y_deflection_plot = results['y_deflection_plot']
-    y_angle_plot = results['y_angle_plot']
-    max_deflection_y = results['max_deflection']
-    max_deflection_x = results['max_deflection_pos']
-
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    
-    # 1. Add Beam Context
-    add_beam_context(fig, beam_x_values)
-
-    # 2. Add Deflection (Primary Y)
-    fig.add_trace(go.Scatter(
-        x=beam_x_values, y=y_deflection_plot, 
-        mode='lines', line=dict(color='blue', width=3), 
-        name='Deflection'
-    ), secondary_y=False)
-    
-    # 3. Add Angle (Secondary Y)
-    fig.add_trace(go.Scatter(
-        x=beam_x_values, y=y_angle_plot, 
-        mode='lines', line=dict(color='red', width=2), 
-        name='Angle Deflection'
-    ), secondary_y=True)
-    
-    # 4. Plot Max Deflection Point
-    fig.add_trace(go.Scatter(
-        x=[max_deflection_x], y=[max_deflection_y],
-        mode='markers',
-        marker=dict(symbol='x', size=15, color='blue'),
-        name='Max Deflection Point',
-        hoverinfo='text',
-        text=f'Max Deflection: {max_deflection_y:.3E}'
-    ), secondary_y=False)
-
-    # 5. Add text label for max deflection (annotation)
-    fig.add_annotation(
-        x=max_deflection_x, y=max_deflection_y,
-        text=f'deflection = {max_deflection_y:.3E}',
-        showarrow=False,
-        font=dict(size=12, color='blue', weight='bold'),
-        xshift=0,
-        yshift=15,
-        yref='y'
-    )
-    
-    #fig.update_layout(title='Deflection and Angle', height=300)
-    fig.update_yaxes(title_text='Deflection', secondary_y=False, color='blue')
-    fig.update_yaxes(title_text='Angle (radians)', secondary_y=True, color='red')
-    fig.update_layout(
-        legend=dict(
-            orientation="h",  # 'h' for horizontal (spreads labels left-to-right)
-            yanchor="bottom", # Anchor point for the Y position is the bottom of the legend box
-            y=-0.3,           # Position the legend below the plot area (0 is the bottom edge)
-            xanchor="center", # Anchor point for the X position is the center of the legend box
-            x=0.5             # Center the legend horizontally
-        )
-    )
-    return fig
 
