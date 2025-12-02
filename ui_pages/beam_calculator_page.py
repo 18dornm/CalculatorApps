@@ -135,11 +135,11 @@ class BeamCalculatorPage:
     def solve_beam_button(self):
         #TODO: checks for if inputs are correct, then converts units to be consistent, then solves beam, then updates plots
         # get all the values
-        beam_length_qty = Q(self.beam_length, self.beam_length_unit)
+        beam_length_qty = Q(self.beam_length.value, self.beam_length_unit.value)
         beam_length_qty = beam_length_qty.to('m')
-        second_moment_area_qty = Q(self.second_moment_area, self.second_moment_area_unit)
+        second_moment_area_qty = Q(self.second_moment_area.value, self.second_moment_area_unit.value)
         second_moment_area_qty = second_moment_area_qty.to('m**4')
-        modulus_elasticity_qty = Q(self.modulus, self.modulus_unit)
+        modulus_elasticity_qty = Q(self.modulus.value, self.modulus_unit.value)
         modulus_elasticity_qty = modulus_elasticity_qty.to('Pa')
         # Check if inputs are correct (fixture position inside bounds)
         fixtures = self.get_fixture_data()

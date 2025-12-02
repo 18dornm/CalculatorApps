@@ -1,4 +1,8 @@
-# Calculator Apps
-
-* Programmed in Python
-* GUI made with NiceGUI
+---
+title: CalculatorApps
+sdk: docker
+emoji: 📊
+colorFrom: indigo
+colorTo: blue
+short_description: Nice Engineering Apps
+---
