@@ -32,6 +32,8 @@ class BeamCalculatorPage:
                                 This beam calculator uses Singularity Functions and Euler-Bernoulli Beam Theory to calculate beam deflections.
                                     
                                 It is not very accurate for small L/D ratios. It was also made by an idiot so use at your own risk.
+                                 
+                                It is calculated analytically, not with the finite element method.
                                     
                                 The "0" position along the beam is always the left-hand side. All beam position values must be positive.
                                 
@@ -55,6 +57,9 @@ class BeamCalculatorPage:
             with ui.row():
                 self.cross_section_area = ui.number(label="(Optional) Cross Sectional Area", value=0.9375, min=0.0)
                 self.cross_section_area_unit = ui.select(options=area_units, value="in²")
+            with ui.row():
+                self.section_y = ui.number(label="(Optional) Distance from Neutral Axis", value=1.0, min=0.0)
+                self.section_y_unit = ui.select(options=length_units, value="in")
         with ui.card().classes('w-80'):
             ui.label('Material Inputs').classes('text-md')
             self.material_quickselect = ui.select(label='Material Selection', options=materials_list, value='Custom', on_change=self.material_change).classes('w-64')
@@ -144,6 +149,7 @@ class BeamCalculatorPage:
         self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
         self.max_deflection_qty = self.max_deflection_qty.to('mm')
         self.max_deflection_pos_qty = Q(self.results['max_deflection_pos'], 'm')
+        self.max_bending_stress_qty = Q(0, 'MPa')
         with ui.row().classes('items-center gap-2'):
             ui.label('Max Deflection = ')
             self.max_deflection_label = ui.label(f"{self.max_deflection_qty.magnitude:.4f}")
@@ -155,14 +161,22 @@ class BeamCalculatorPage:
             ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
             self.max_deflection_pos_unit = ui.select(options=length_units, value='m', on_change=self.deflection_pos_unit_changed)
         with ui.row().classes('items-center gap-2'):
+            ui.label('Max Bending Stress = ')
+            self.max_bending_stress_label = ui.label(f"{self.max_bending_stress_qty.magnitude:.6f}")
+            ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
+            self.max_bending_stress_unit = ui.select(options=stress_units, value='MPa', on_change=self.bending_stress_unit_changed)
+        
+        
+        
+        with ui.row().classes('items-center gap-2'):
             self.plot_length_unit = ui.select(options=length_units, value='m', on_change=self.plot_unit_change, label="Plot Length Unit").classes('w-32')
             self.plot_force_unit = ui.select(options=force_units, value='N', on_change=self.plot_unit_change, label="Plot Force Unit").classes('w-32')
         self.beam_plot = ui.plotly(generate_beam_plot(self.results)).classes('w-full')
             
     def convert_plot_units(self, new_length_unit:str, new_force_unit:str):
         converted_results = self.results
-        old_length_unit = 'm'
-        old_force_unit = 'N'
+        old_length_unit = self.results['length_unit']
+        old_force_unit = self.results['force_unit']
         try:
             length_conversion = 1*u(old_length_unit).to(new_length_unit).magnitude
             old_force_per_length_unit = f"{old_force_unit} / {old_length_unit}"
@@ -191,7 +205,16 @@ class BeamCalculatorPage:
             if load[0] == 'Constant Distributed Load' or load[0] == 'Linear Distributed Load':
                 load[2] = load[2] * length_conversion
             load[3] = load[3] * length_conversion
+        for unknown in converted_results['unknowns']:
+            if unknown[0] > 2:
+                unknown[2] = unknown[2] * length_conversion
+        for loc in converted_results['important_locations']:
+            loc[1] = loc[1] * length_conversion
+
+
         
+        self.results['length_unit'] = new_length_unit
+        self.results['force_unit'] = new_force_unit
         return converted_results, new_length_unit, new_force_unit
     
     def plot_unit_change(self):
@@ -199,12 +222,10 @@ class BeamCalculatorPage:
         # refresh plots
         converted_results, out_length_unit, out_force_unit= self.convert_plot_units(self.plot_length_unit.value, self.plot_force_unit.value)
         self.beam_plot.figure = generate_beam_plot(converted_results, out_length_unit, out_force_unit)
-        #BUG: plot doesn't re-update correctly from multiple unit changes
         self.beam_plot.update()
         ui.notify("Beam Results Updated.")
         return
     
-
     def add_fixture_row(self):
         row = BeamFixtureRow(self.fixture_rows_container, page=self)
         self.fixture_rows.append(row)
@@ -291,7 +312,7 @@ class BeamCalculatorPage:
         if not self.is_updating:
             self.material_quickselect.value = 'Custom'
     
-    async def solve_beam_button(self):
+    def solve_beam_button(self):
         # get all the values
         try:
             beam_length_qty = Q(self.beam_length.value, self.beam_length_unit.value)
@@ -368,15 +389,23 @@ class BeamCalculatorPage:
                     loads_moments.append([load['type'], load_pos.magnitude, None, load_val.magnitude])
         
         # now solve the beam (eventually put this in a try except)
-        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, num_points=250)
+        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, 250, 'm', 'N')
         
         self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
         self.max_deflection_qty = self.max_deflection_qty.to('mm')
         self.max_deflection_pos_qty = Q(self.results['max_deflection_pos'], 'm')
+        max_moment_qty = Q(max(self.results['y_moment_plot']), 'N * m')
+        second_moment_qty = Q(self.second_moment_area.value, self.second_moment_area_unit.value)
+        section_y_qty = Q(self.section_y.value, self.section_y_unit.value)
+        self.max_bending_stress_qty = max_moment_qty * section_y_qty / second_moment_qty
+        self.max_bending_stress_qty = self.max_bending_stress_qty.to('MPa')
         self.max_deflection_label.text = f"{self.max_deflection_qty.magnitude:.4f}"
         self.max_deflection_pos_label.text = f"{self.max_deflection_pos_qty.magnitude:.6f}"
         self.max_deflection_unit.value = f"{self.max_deflection_qty.units:~P}"
         self.max_deflection_pos_unit.value = f"{self.max_deflection_pos_qty.units:~P}"
+        self.max_bending_stress_label.text = f"{self.max_bending_stress_qty.magnitude:.4f}"
+        self.max_bending_stress_unit.value = f"{self.max_bending_stress_qty.units:~P}"
+
         # Update each plotly component by assigning a new figure
         self.plot_length_unit.value = 'm'
         self.plot_force_unit.value = 'N'
@@ -392,7 +421,10 @@ class BeamCalculatorPage:
     def deflection_pos_unit_changed(self):
         self.max_deflection_pos_qty = self.max_deflection_pos_qty.to(self.max_deflection_pos_unit.value)
         self.max_deflection_pos_label.text = f"{self.max_deflection_pos_qty.magnitude:.4f}"
-        ui.notify("updated position of deflection")
+    
+    def bending_stress_unit_changed(self):
+        self.max_bending_stress_qty = self.max_bending_stress_qty.to(self.max_bending_stress_unit.value)
+        self.max_bending_stress_label.text = f"{self.max_bending_stress_qty.magnitude:.4f}"
     
     def copy_result(self):
         ui.run_javascript(f'navigator.clipboard.writeText("{self.volume_output.text}");')

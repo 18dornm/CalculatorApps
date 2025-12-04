@@ -17,6 +17,9 @@ volume = Q_(1, 'in**4')
 print(volume)
 vol_str = f"{volume.units:~P}"
 print(vol_str)
+
+m_to_in = 1*ureg('m').to('in').magnitude
+print(m_to_in)
 '''
 # Get all unit names/aliases, excluding private/magic methods and other attributes
 units = [name for name in dir(ureg) if not name.startswith('_')]

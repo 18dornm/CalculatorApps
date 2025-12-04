@@ -439,7 +439,7 @@ def find_new_coeffs(forces, unknowns, youngs_modulus, moment_of_inertia, solns, 
         return u_coeffs
 
     
-def solve_beam(loads_moments, fixtures, overall_length, moment_of_inertia, youngs_modulus, num_points):
+def solve_beam(loads_moments, fixtures, overall_length, moment_of_inertia, youngs_modulus, num_points, result_length_unit, result_force_unit):
     important_locations = locations_of_interest(loads_moments, fixtures)
     unknowns = find_unknowns(fixtures)
 
@@ -483,8 +483,12 @@ def solve_beam(loads_moments, fixtures, overall_length, moment_of_inertia, young
         'y_angle_plot': y_angle_plot,
         'y_deflection_plot': y_deflection_plot,
         'max_deflection': max_deflection,
-        'max_deflection_pos': max_deflection_pos
+        'max_deflection_pos': max_deflection_pos,
+        'length_unit': result_length_unit,
+        'force_unit': result_force_unit
     }
+    print("beam solution beam_x_values end:")
+    print(beam_x_values[-1])
     return results
 
 
