@@ -502,6 +502,11 @@ def add_beam_context(fig, results:dict, row_num, col_num):
     ), row=row_num, col=col_num)
     for fixture in results['fixtures']:
         if fixture[0] == "Pinned/Roller":
+            fixture_hover_text = "Pinned/Roller Support: "
+            for reaction in results['reactions']:
+                if reaction[0] > 2: # skip integration constants
+                    if reaction[2] == fixture[1]: # reaction and fixture at same location
+                        fixture_hover_text += "<br>Force = " + f"{reaction[3]:.4f}" + " " + results['force_unit']
             fig.add_trace(go.Scatter(
                 x=[fixture[1]], y=[0],
                 marker_symbol="arrow-up",
@@ -509,9 +514,17 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 marker_size=15,
                 showlegend=False,
                 hoverinfo="text",
-                hovertext=["Pinned/Roller Support"]
+                hovertext=[fixture_hover_text]
             ), row=row_num, col=col_num)
         if fixture[0] == "Fixed":
+            fixture_hover_text = "Fixed Support: "
+            for reaction in results['reactions']:
+                if reaction[0] > 2: # skip integration constants
+                    if reaction[2] == fixture[1]: # reaction and fixture at same location
+                        if reaction[1] == 'Moment':
+                            fixture_hover_text += "<br>Moment = " + f"{reaction[3]:.4f}" + " " + results['force_unit'] + "*" + results['length_unit']
+                        if reaction[1] == 'Force y':
+                            fixture_hover_text += "<br>Force = " + f"{reaction[3]:.4f}" + " " + results['force_unit']
             fig.add_trace(go.Scatter(
                 x=[fixture[1]], y=[0],
                 marker_symbol="square",
@@ -519,7 +532,7 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 marker_size=15,
                 showlegend=False,
                 hoverinfo="text",
-                hovertext=["Fixed Support"]
+                hovertext=[fixture_hover_text]
             ), row=row_num, col=col_num)
     #4. Add loads and moments
     for load in results['loads_moments']:
@@ -534,7 +547,7 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 textposition="top center",
                 textfont=dict(size=28, color="red", weight="bold"),
                 hoverinfo="text",
-                hovertext=[f"Force: {load_value}"],
+                hovertext=[f"Force: {load_value}"+ " " + results['force_unit']],
                 showlegend=False
             ), row=row_num, col=col_num)
         if load[0] == 'Concentrated Moment':
@@ -547,7 +560,7 @@ def add_beam_context(fig, results:dict, row_num, col_num):
                 textposition="middle center",
                 textfont=dict(size=28, color="red", weight="bold"),
                 hoverinfo="text",
-                hovertext=[f"Moment: {load_value}"],
+                hovertext=[f"Moment: {load_value}"+ " " + results['force_unit']+ "*" + results['length_unit']],
                 showlegend=False
             ), row=row_num, col=col_num)
 

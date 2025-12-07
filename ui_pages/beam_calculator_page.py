@@ -8,6 +8,7 @@ class BeamCalculatorPage:
         self.results = {
         'fixtures': [],
         'loads_moments': [],
+        'reactions': [],
         'unknowns': None,
         'important_locations': None,
         'beam_x_values': None,
@@ -18,8 +19,9 @@ class BeamCalculatorPage:
         'y_deflection_plot': None,
         'max_deflection': 0.0,
         'max_deflection_pos': 0.0,
-
-    }
+        'length_unit': 'm',
+        'force_unit': 'N'
+        }
         self.fixtures = []
         self.distr_load_rows = []
         self.build_ui()
@@ -166,13 +168,42 @@ class BeamCalculatorPage:
             ui.button(icon='content_copy', on_click=self.copy_result).props('flat dense round size=sm').classes('bg-white text-black')
             self.max_bending_stress_unit = ui.select(options=stress_units, value='MPa', on_change=self.bending_stress_unit_changed)
         
-        
-        
         with ui.row().classes('items-center gap-2'):
             self.plot_length_unit = ui.select(options=length_units, value='m', on_change=self.plot_unit_change, label="Plot Length Unit").classes('w-32')
             self.plot_force_unit = ui.select(options=force_units, value='N', on_change=self.plot_unit_change, label="Plot Force Unit").classes('w-32')
+        
+        ui.label('Beam Support Reaction Forces and Moments')
+        reactions_table_content = self.fill_reactions_table()
+        reactions_table_columns = [
+            {'name': 'Reaction', 'label': 'Reaction', 'field': 'Reaction'},
+            {'name': 'Location', 'label': 'Location', 'field': 'Location'},
+            {'name': 'Value', 'label': 'Value', 'field': 'Value'},
+            {'name': 'Units', 'label': 'Units', 'field': 'Units'},
+        ]
+        self.reactions_table = ui.table(rows=reactions_table_content,
+                                        columns=reactions_table_columns,
+                                        column_defaults={'align': 'left','headerClasses': 'uppercase text-primary',})
+        
         self.beam_plot = ui.plotly(generate_beam_plot(self.results)).classes('w-full')
             
+    def fill_reactions_table(self):
+        reactions_table = []
+        moment_units = f"{self.results['force_unit']} * {self.results['length_unit']}"
+        for reaction in self.results['reactions']:
+            if reaction[0] > 2: # skip integration constants
+                if reaction[1] == 'Moment':
+                    reactions_table.append({'Reaction': reaction[1],
+                                            'Location': f"{reaction[2]:.4f}",
+                                            'Value': f"{reaction[3]:.4f}",
+                                            'Units': moment_units})
+                elif reaction[1] == "Force y":
+                    reactions_table.append({'Reaction': reaction[1],
+                                            'Location': f"{reaction[2]:.4f}",
+                                            'Value': f"{reaction[3]:.4f}",
+                                            'Units': self.results['force_unit']})
+        return reactions_table
+
+    
     def convert_plot_units(self, new_length_unit:str, new_force_unit:str):
         converted_results = self.results
         old_length_unit = self.results['length_unit']
@@ -205,7 +236,6 @@ class BeamCalculatorPage:
                 load[2] = load[2] * length_conversion
             load[3] = load[3] * length_conversion
         for reaction in converted_results['reactions']:
-            print(reaction)
             if reaction[0] > 2:
                 reaction[2] = reaction[2] * length_conversion
                 if reaction[1] == 'Moment':
@@ -216,7 +246,6 @@ class BeamCalculatorPage:
                 reaction[3] = reaction[3] * length_conversion # the second integration constant has length units
         for loc in converted_results['important_locations']:
             loc[1] = loc[1] * length_conversion
-        print(converted_results)
         self.results['length_unit'] = new_length_unit
         self.results['force_unit'] = new_force_unit
         return converted_results, new_length_unit, new_force_unit
@@ -225,8 +254,11 @@ class BeamCalculatorPage:
         # convert results values to new units
         # refresh plots
         converted_results, out_length_unit, out_force_unit= self.convert_plot_units(self.plot_length_unit.value, self.plot_force_unit.value)
+        self.results = converted_results
         self.beam_plot.figure = generate_beam_plot(converted_results, out_length_unit, out_force_unit)
         self.beam_plot.update()
+        reactions_table_content = self.fill_reactions_table()
+        self.reactions_table.rows = reactions_table_content
         ui.notify("Beam Results Updated.")
         return
     
@@ -393,7 +425,7 @@ class BeamCalculatorPage:
                     loads_moments.append([load['type'], load_pos.magnitude, None, load_val.magnitude])
         
         # now solve the beam (eventually put this in a try except)
-        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, 10, 'm', 'N')
+        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, 200, 'm', 'N')
         
         self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
         self.max_deflection_qty = self.max_deflection_qty.to('mm')
@@ -409,6 +441,9 @@ class BeamCalculatorPage:
         self.max_deflection_pos_unit.value = f"{self.max_deflection_pos_qty.units:~P}"
         self.max_bending_stress_label.text = f"{self.max_bending_stress_qty.magnitude:.4f}"
         self.max_bending_stress_unit.value = f"{self.max_bending_stress_qty.units:~P}"
+
+        reactions_table_content = self.fill_reactions_table()
+        self.reactions_table.rows = reactions_table_content
 
         # Update each plotly component by assigning a new figure
         self.plot_length_unit.value = 'm'
