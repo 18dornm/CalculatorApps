@@ -93,8 +93,8 @@ def find_unknowns(fixtures):
     # if pinned, unknowns are Py, [Px], Theta. moment=u=0
     # if roller, unknowns are Py, Theta. [Px]=u=moment=0
     unknowns = []
-    unknowns.append([1, "a1", "--"])
-    unknowns.append([2, "a2", "--"])
+    unknowns.append([1, "a1", None])
+    unknowns.append([2, "a2", None])
     identifier = 3
     
     for fixture in fixtures:
@@ -471,10 +471,12 @@ def solve_beam(loads_moments, fixtures, overall_length, moment_of_inertia, young
     max_deflection_idx = np.argmax(np.absolute(y_deflection_plot))
     max_deflection = y_deflection_plot[max_deflection_idx]
     max_deflection_pos = beam_x_values[max_deflection_idx]
+
+    reactions = [row + [solns[i]] for i, row in enumerate(unknowns)] # add the reaction value to each row of the unknowns list
     results = {
         'fixtures': fixtures,
         'loads_moments': loads_moments,
-        'unknowns': solns,
+        'reactions': reactions,
         'important_locations': important_locations,
         'beam_x_values': beam_x_values,
         'y_force_plot': y_force_plot,
@@ -487,8 +489,6 @@ def solve_beam(loads_moments, fixtures, overall_length, moment_of_inertia, young
         'length_unit': result_length_unit,
         'force_unit': result_force_unit
     }
-    print("beam solution beam_x_values end:")
-    print(beam_x_values[-1])
     return results
 
 

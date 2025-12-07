@@ -190,29 +190,33 @@ class BeamCalculatorPage:
             ui.notify("Could not convert plot units.")
             return self.results, 'm', 'N'
 
-        converted_results['beam_x_values'] = [x * length_conversion for x in self.results['beam_x_values']]
-        converted_results['y_force_plot'] = [f * force_per_length_conversion for f in self.results['y_force_plot']]
-        converted_results['y_shear_plot'] = [s * force_conversion for s in self.results['y_shear_plot']]
-        converted_results['y_moment_plot'] = [m * moment_conversion for m in self.results['y_moment_plot']]
-        converted_results['y_deflection_plot'] = [d * length_conversion for d in self.results['y_deflection_plot']]
-        converted_results['max_deflection'] = self.results['max_deflection'] * length_conversion
-        converted_results['max_deflection_pos'] = self.results['max_deflection_pos'] * length_conversion
-
-        for fixture in converted_results['fixtures']:
-            fixture[1] = fixture[1] * length_conversion
+        converted_results['beam_x_values'] = [x * length_conversion for x in converted_results['beam_x_values']]
+        converted_results['y_force_plot'] = [f * force_per_length_conversion for f in converted_results['y_force_plot']]
+        converted_results['y_shear_plot'] = [s * force_conversion for s in converted_results['y_shear_plot']]
+        converted_results['y_moment_plot'] = [m * moment_conversion for m in converted_results['y_moment_plot']]
+        converted_results['y_deflection_plot'] = [d * length_conversion for d in converted_results['y_deflection_plot']]
+        converted_results['max_deflection'] = converted_results['max_deflection'] * length_conversion
+        converted_results['max_deflection_pos'] = converted_results['max_deflection_pos'] * length_conversion
+        #for fixture in converted_results['fixtures']:
+        #    fixture[1] = fixture[1] * length_conversion
         for load in converted_results['loads_moments']:
             load[1] = load[1] * length_conversion
             if load[0] == 'Constant Distributed Load' or load[0] == 'Linear Distributed Load':
                 load[2] = load[2] * length_conversion
             load[3] = load[3] * length_conversion
-        for unknown in converted_results['unknowns']:
-            if unknown[0] > 2:
-                unknown[2] = unknown[2] * length_conversion
+        for reaction in converted_results['reactions']:
+            print(reaction)
+            if reaction[0] > 2:
+                reaction[2] = reaction[2] * length_conversion
+                if reaction[1] == 'Moment':
+                    reaction[3] = reaction[3] * moment_conversion
+                elif reaction[1] == 'Force y':
+                    reaction[3] = reaction[3] * force_conversion
+            elif (reaction[0] == 1):
+                reaction[3] = reaction[3] * length_conversion # the second integration constant has length units
         for loc in converted_results['important_locations']:
             loc[1] = loc[1] * length_conversion
-
-
-        
+        print(converted_results)
         self.results['length_unit'] = new_length_unit
         self.results['force_unit'] = new_force_unit
         return converted_results, new_length_unit, new_force_unit
@@ -389,7 +393,7 @@ class BeamCalculatorPage:
                     loads_moments.append([load['type'], load_pos.magnitude, None, load_val.magnitude])
         
         # now solve the beam (eventually put this in a try except)
-        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, 250, 'm', 'N')
+        self.results = solve_beam(loads_moments, self.fixtures, beam_length_qty.magnitude, second_moment_area_qty.magnitude, modulus_elasticity_qty.magnitude, 10, 'm', 'N')
         
         self.max_deflection_qty = Q(self.results['max_deflection'], 'm')
         self.max_deflection_qty = self.max_deflection_qty.to('mm')
