@@ -23,7 +23,7 @@ class VolumeConverterPage:
                                         new_value_mode='add-unique',
                                         on_change=self.update_output).classes('w-24')
         ui.separator()
-        ui.label('Input Conditions').classes('text-lg mt-6 font-bold')
+        ui.label('Input Conditions').classes('h1')
         self.input_condition_type = ui.label('Conditions are Currently Custom.')
         with ui.row().classes('items-center gap-2'):
             ui.label('Set to...')
@@ -56,7 +56,7 @@ class VolumeConverterPage:
             ui.label('%')
         
         ui.separator()
-        ui.label('Output Conditions').classes('text-lg mt-6 font-bold')
+        ui.label('Output Conditions').classes('h1')
         self.output_condition_type = ui.label('Conditions are Currently Custom.')
         with ui.row().classes('items-center gap-2'):
             ui.label('Set to...')

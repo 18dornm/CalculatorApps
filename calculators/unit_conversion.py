@@ -1,7 +1,7 @@
 from pint import UnitRegistry
 
 u = UnitRegistry()
-qu = u.Quantity
+Q = u.Quantity
 
 def convert(value: float, from_unit:str, to_unit:str):
     '''Convert value between units using Pint.'''

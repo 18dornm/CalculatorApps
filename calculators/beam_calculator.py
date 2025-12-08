@@ -1,10 +1,10 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
-from pint import UnitRegistry
-u = UnitRegistry()
-
-Q = u.Quantity
+from calculators.unit_conversion import Q
+#from pint import UnitRegistry
+#u = UnitRegistry()
+#Q = u.Quantity
 
 fixture_types = ['Fixed', 'Pinned/Roller']
 load_moment_types = ['Concentrated Force', 'Distributed Load', 'Concentrated Moment']
