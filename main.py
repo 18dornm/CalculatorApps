@@ -30,6 +30,7 @@ from ui_pages.unit_converter_page import unit_converter_page
 from ui_pages.volume_converter_page import VolumeConverterPage
 from ui_pages.beam_calculator_page import BeamCalculatorPage
 from ui_pages.cylinder_force_page import CylinderForcePage
+from ui_pages.linear_interpolation_page import LinearInterpolationPage
 
 
 
@@ -39,6 +40,7 @@ with ui.tabs() as tabs:
     tab_volume_converter = ui.tab('Volume Converter')
     tab_beam_calculator = ui.tab('Beam Calculator')
     tab_cylinder_force = ui.tab('Cylinder Force')
+    tab_linear_interpolator = ui.tab('Linear Interpolator')
 
 with ui.tab_panels(tabs, value=tab_converter).classes('w-full'):
     with ui.tab_panel(tab_converter):
@@ -52,5 +54,8 @@ with ui.tab_panels(tabs, value=tab_converter).classes('w-full'):
     
     with ui.tab_panel(tab_cylinder_force):
         CylinderForcePage()
+    
+    with ui.tab_panel(tab_linear_interpolator):
+        LinearInterpolationPage()
 
 ui.run(title='Calculator Apps', host='0.0.0.0', port=7860)

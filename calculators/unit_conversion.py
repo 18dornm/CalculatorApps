@@ -6,7 +6,7 @@ Q = u.Quantity
 def convert(value: float, from_unit:str, to_unit:str):
     '''Convert value between units using Pint.'''
     try:
-        quantity = qu(value, from_unit)
+        quantity = Q(value, from_unit)
         return quantity.to(to_unit).magnitude
     except Exception:
         return None

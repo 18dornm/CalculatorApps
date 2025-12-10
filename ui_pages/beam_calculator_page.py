@@ -1,6 +1,6 @@
 from nicegui import ui
 from calculators.beam_calculator import *
-from calculators.unit_conversion import second_moment_of_area_units, density_units, stress_units, length_units, force_units, distributed_force_units, torque_units, area_units
+from calculators.unit_conversion import * #second_moment_of_area_units, density_units, stress_units, length_units, force_units, distributed_force_units, torque_units, area_units, u, Q
 
 
 class BeamCalculatorPage:
@@ -176,9 +176,13 @@ class BeamCalculatorPage:
             ui.restructured_text('''
                                 This beam calculator uses Singularity Functions and Euler-Bernoulli Beam Theory to calculate beam deflections.
                                     
-                                It is not very accurate for small L/D ratios. It was also made by an idiot so use at your own risk.
+                                Results are calculated analytically, not with the finite element method.
+                                
+                                Euler-Bernoulli is not very accurate for small L/D ratios. 
                                  
-                                It is calculated analytically, not with the finite element method.
+                                This calculator was also made by an idiot so use at your own risk.
+                                 
+                                Results have been compared with success to other beam solvers but not thoroughly.
                                     
                                 The "0" position along the beam is always the left-hand side. All beam position values must be positive.
                                 

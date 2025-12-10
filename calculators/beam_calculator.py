@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
-from calculators.unit_conversion import Q
+from calculators.unit_conversion import *
 #from pint import UnitRegistry
 #u = UnitRegistry()
 #Q = u.Quantity
